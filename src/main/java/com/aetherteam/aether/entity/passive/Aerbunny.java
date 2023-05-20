@@ -40,6 +40,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeMod;
 
@@ -96,7 +97,7 @@ public class Aerbunny extends AetherAnimal {
             this.setPuffiness(0);
         }
         this.handlePlayerInput();
-        if (this.isOnGround() || !this.getFeetBlockState().isAir() || (this.getVehicle() != null && (this.getVehicle().isOnGround() || !this.getVehicle().getFeetBlockState().isAir() || this.level.getBlockStates(this.getVehicle().getBoundingBox()).anyMatch((state) -> !state.isAir())))) {
+        if (this.getVehicle() != null && (this.getVehicle().isOnGround() || this.getVehicle().isInFluidType())) {
             this.lastPos = null;
         }
     }
@@ -128,7 +129,7 @@ public class Aerbunny extends AetherAnimal {
             if (!player.isOnGround() && !player.isFallFlying()) {
                 AttributeInstance playerGravity = player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get());
                 if (playerGravity != null) {
-                    if (!player.getAbilities().flying && !player.isInWater() && !player.isInLava() && playerGravity.getValue() > 0.02) {
+                    if (!player.getAbilities().flying && !player.isInFluidType() && playerGravity.getValue() > 0.02) {
                         player.setDeltaMovement(player.getDeltaMovement().add(0.0, 0.05, 0.0));
                     }
                 }
@@ -159,8 +160,8 @@ public class Aerbunny extends AetherAnimal {
     @Override
     public void baseTick() {
         super.baseTick();
-        if (this.isAlive() && this.isEyeInFluidType(ForgeMod.WATER_TYPE.get()) && !this.level.getBlockState(BlockPos.containing(this.getX(), this.getEyeY(), this.getZ())).is(Blocks.BUBBLE_COLUMN)
-                && this.isPassenger() && this.getVehicle() != null && !this.getVehicle().canBeRiddenUnderFluidType(ForgeMod.WATER_TYPE.get(), this) && this.level.isClientSide) {
+        if (this.isAlive() && this.isPassenger() && this.getVehicle() != null && this.getVehicle().isEyeInFluidType(ForgeMod.WATER_TYPE.get())
+                && !this.level.getBlockState(BlockPos.containing(this.getVehicle().getX(), this.getVehicle().getEyeY(), this.getVehicle().getZ())).is(Blocks.BUBBLE_COLUMN)) {
             this.stopRiding();
         }
     }
@@ -170,7 +171,7 @@ public class Aerbunny extends AetherAnimal {
     public InteractionResult mobInteract(@Nonnull Player player, @Nonnull InteractionHand hand) {
         InteractionResult result = super.mobInteract(player, hand);
         if (!(this.getVehicle() instanceof Player vehicle) || vehicle.equals(player)) {
-            if (player.isShiftKeyDown() || result == InteractionResult.PASS || result == InteractionResult.FAIL) {
+            if ((player.isShiftKeyDown() || result == InteractionResult.PASS || result == InteractionResult.FAIL) && !super.isInWall()) {
                 return this.ridePlayer(player);
             }
         }
@@ -282,6 +283,14 @@ public class Aerbunny extends AetherAnimal {
     }
 
     @Override
+    public boolean isPickable() {
+        if (this.getVehicle() instanceof Player player) {
+            return player.getBoundingBox().expandTowards(player.getViewVector(0.0F)).contains(this.getBoundingBox().getCenter().add(0, this.getBoundingBox().getSize() / 2, 0));
+        }
+        return true;
+    }
+
+    @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putBoolean("Afraid", this.afraid);
@@ -301,11 +310,6 @@ public class Aerbunny extends AetherAnimal {
     @Override
     public boolean isInWall() {
         return !this.isPassenger() && super.isInWall();
-    }
-
-    @Override
-    protected int calculateFallDamage(float distance, float damageMultiplier) {
-        return 0;
     }
 
     @Nullable

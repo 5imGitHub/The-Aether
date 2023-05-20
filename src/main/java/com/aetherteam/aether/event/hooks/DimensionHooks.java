@@ -5,6 +5,7 @@ import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.block.FreezingBlock;
 import com.aetherteam.aether.block.portal.AetherPortalForcer;
 import com.aetherteam.aether.block.portal.AetherPortalShape;
+import com.aetherteam.aether.capability.item.DroppedItem;
 import com.aetherteam.aether.event.AetherGameEvents;
 import com.aetherteam.aether.mixin.mixins.common.accessor.ServerGamePacketListenerImplAccessor;
 import com.aetherteam.aether.mixin.mixins.common.accessor.ServerLevelAccessor;
@@ -33,6 +34,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Saddleable;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -49,6 +51,7 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -212,10 +215,17 @@ public class DimensionHooks {
         if (level instanceof ServerLevel serverLevel) {
             if (!AetherConfig.COMMON.disable_falling_to_overworld.get()) {
                 for (Entity entity : serverLevel.getEntities(EntityTypeTest.forClass(Entity.class), Objects::nonNull)) {
-                    if (level.getBiome(entity.blockPosition()).is(AetherTags.Biomes.FALL_TO_OVERWORLD)) {
+                    if (level.getBiome(entity.blockPosition()).is(AetherTags.Biomes.FALL_TO_OVERWORLD) && level.dimension() == LevelUtil.destinationDimension()) {
                         if (entity.getY() <= serverLevel.getMinBuildHeight() && !entity.isPassenger()) {
                             if ((entity instanceof Player player && !player.getAbilities().flying) || entity.isVehicle() || (entity instanceof Saddleable) && ((Saddleable) entity).isSaddled()) {
                                 entityFell(entity);
+                            } else if (entity instanceof ItemEntity itemEntity) {
+                                LazyOptional<DroppedItem> droppedItem = DroppedItem.get(itemEntity);
+                                if (droppedItem.isPresent() && droppedItem.resolve().isPresent()) {
+                                    if (itemEntity.getOwner() instanceof Player || droppedItem.resolve().get().getOwner() instanceof Player) {
+                                        entityFell(entity);
+                                    }
+                                }
                             }
                         }
                     }
@@ -233,7 +243,7 @@ public class DimensionHooks {
         MinecraftServer minecraftserver = serverLevel.getServer();
         if (minecraftserver != null) {
             ServerLevel destination = minecraftserver.getLevel(LevelUtil.returnDimension());
-            if (destination != null) {
+            if (destination != null && LevelUtil.returnDimension() != LevelUtil.destinationDimension()) {
                 List<Entity> passengers = entity.getPassengers();
                 entity.level.getProfiler().push("aether_fall");
                 entity.setPortalCooldown();

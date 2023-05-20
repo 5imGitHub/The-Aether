@@ -18,6 +18,8 @@ import com.aetherteam.aether.capability.arrow.PhoenixArrow;
 import com.aetherteam.aether.capability.lightning.LightningTracker;
 import com.aetherteam.aether.capability.player.AetherPlayer;
 import com.aetherteam.aether.loot.AetherLootContexts;
+import com.aetherteam.aether.network.AetherPacketHandler;
+import com.aetherteam.aether.network.packet.client.ToolDebuffPacket;
 import com.aetherteam.aether.util.EquipmentUtil;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
@@ -52,6 +54,7 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotResult;
 
@@ -63,15 +66,13 @@ public class AbilityHooks {
     public static class AccessoryHooks {
         /**
          * Damages an entity's Gloves when they hurt another entity.
-         * @param source The attacking {@link DamageSource}.
-         * @see com.aetherteam.aether.event.listeners.abilities.AccessoryAbilityListener#onLivingHurt(LivingHurtEvent)
+         * @param player The attacking {@link Player}.
+         * @see com.aetherteam.aether.mixin.mixins.common.PlayerMixin#attack(Entity, CallbackInfo)
          */
-        public static void damageGloves(DamageSource source) {
-            if (source.getDirectEntity() instanceof Player player) {
-                SlotResult slotResult = EquipmentUtil.getGloves(player);
-                if (slotResult != null) {
-                    slotResult.stack().hurtAndBreak(1, player, wearer -> CuriosApi.getCuriosHelper().onBrokenCurio(slotResult.slotContext()));
-                }
+        public static void damageGloves(Player player) {
+            SlotResult slotResult = EquipmentUtil.getGloves(player);
+            if (slotResult != null) {
+                slotResult.stack().hurtAndBreak(1, player, wearer -> CuriosApi.getCuriosHelper().onBrokenCurio(slotResult.slotContext()));
             }
         }
 
@@ -79,11 +80,11 @@ public class AbilityHooks {
          * Damages Zanite Rings when a block is broken.
          * @see com.aetherteam.aether.event.listeners.abilities.AccessoryAbilityListener#onBlockBreak(BlockEvent.BreakEvent)
          */
-        public static void damageZaniteRing(LivingEntity entity) {
+        public static void damageZaniteRing(LivingEntity entity, LevelAccessor level, BlockState state, BlockPos pos) {
             List<SlotResult> slotResults = EquipmentUtil.getZaniteRings(entity);
             for (SlotResult slotResult : slotResults) {
                 if (slotResult != null) {
-                    if (entity.getRandom().nextInt(3) == 0) {
+                    if (state.getDestroySpeed(level, pos) > 0 && entity.getRandom().nextInt(6) == 0) {
                         slotResult.stack().hurtAndBreak(1, entity, wearer -> CuriosApi.getCuriosHelper().onBrokenCurio(slotResult.slotContext()));
                     }
                 }
@@ -94,10 +95,10 @@ public class AbilityHooks {
          * Damages Zanite Pendant when a block is broken.
          * @see com.aetherteam.aether.event.listeners.abilities.AccessoryAbilityListener#onBlockBreak(BlockEvent.BreakEvent)
          */
-        public static void damageZanitePendant(LivingEntity entity) {
+        public static void damageZanitePendant(LivingEntity entity, LevelAccessor level, BlockState state, BlockPos pos) {
             SlotResult slotResult = EquipmentUtil.getZanitePendant(entity);
             if (slotResult != null) {
-                if (entity.getRandom().nextInt(3) == 0) {
+                if (state.getDestroySpeed(level, pos) > 0 && entity.getRandom().nextInt(6) == 0) {
                     slotResult.stack().hurtAndBreak(1, entity, wearer -> CuriosApi.getCuriosHelper().onBrokenCurio(slotResult.slotContext()));
                 }
             }
@@ -130,6 +131,14 @@ public class AbilityHooks {
                 speed = ZaniteAccessory.handleMiningSpeed(speed, slotResult.stack());
             }
             return speed;
+        }
+
+        /**
+         * Prevents magma block damage when wearing ice accessories.
+         * @see com.aetherteam.aether.event.listeners.abilities.AccessoryAbilityListener#onEntityHurt(net.minecraftforge.event.entity.living.LivingAttackEvent)
+         */
+        public static boolean preventMagmaDamage(LivingEntity entity, DamageSource source) {
+            return source == entity.getLevel().damageSources().hotFloor() && EquipmentUtil.hasFreezingAccessory(entity);
         }
     }
 
@@ -175,6 +184,8 @@ public class AbilityHooks {
                 .put(AetherBlocks.AETHER_DIRT_PATH.get(), AetherBlocks.AETHER_FARMLAND.get())
                 .build();
 
+        public static boolean debuffTools;
+
         /**
          * Handles modifying blocks when a {@link ToolAction} is performed on them.
          * @param accessor The {@link LevelAccessor} of the level.
@@ -206,12 +217,12 @@ public class AbilityHooks {
 
         /**
          * Handles ability for {@link com.aetherteam.aether.item.tools.abilities.HolystoneTool}.
-         * @see HolystoneTool#dropAmbrosium(Player, Level, BlockPos)
+         * @see HolystoneTool#dropAmbrosium(Player, Level, BlockPos, ItemStack, BlockState)
          * @see com.aetherteam.aether.event.listeners.abilities.ToolAbilityListener#doHolystoneAbility(BlockEvent.BreakEvent)
          */
-        public static void handleHolystoneToolAbility(Player player, Level level, BlockPos pos, ItemStack stack) {
+        public static void handleHolystoneToolAbility(Player player, Level level, BlockPos pos, ItemStack stack, BlockState blockState) {
             if (stack.getItem() instanceof HolystoneTool holystoneTool) {
-                holystoneTool.dropAmbrosium(player, level, pos);
+                holystoneTool.dropAmbrosium(player, level, pos, stack, blockState);
             }
         }
 
@@ -237,8 +248,14 @@ public class AbilityHooks {
          * @return The debuffed mining speed, as a {@link Float}.
          * @see com.aetherteam.aether.event.listeners.abilities.ToolAbilityListener#modifyBreakSpeed(PlayerEvent.BreakSpeed)
          */
-        public static float reduceToolEffectiveness(BlockState state, ItemStack stack, float speed) {
+        public static float reduceToolEffectiveness(Player player, BlockState state, ItemStack stack, float speed) {
             if (AetherConfig.COMMON.tools_debuff.get()) {
+                if (!player.getLevel().isClientSide()) {
+                    debuffTools = true;
+                    AetherPacketHandler.sendToNear(new ToolDebuffPacket(true), player.getX(), player.getY(), player.getZ(), 10, player.getLevel().dimension());
+                }
+            }
+            if (debuffTools) {
                 if ((state.getBlock().getDescriptionId().startsWith("block.aether.") || state.is(AetherTags.Blocks.TREATED_AS_AETHER_BLOCK)) && !state.is(AetherTags.Blocks.TREATED_AS_VANILLA_BLOCK)) {
                     if (!stack.isEmpty() && stack.isCorrectToolForDrops(state) && !stack.getItem().getDescriptionId().startsWith("item.aether.") && !stack.is(AetherTags.Items.TREATED_AS_AETHER_ITEM)) {
                         speed = (float) Math.pow(speed, -0.2);

@@ -40,7 +40,7 @@ public class AetherEntityTagData extends EntityTypeTagsProvider {
                 EntityType.WITHER,
                 EntityType.ENDER_DRAGON);
         this.tag(AetherTags.Entities.NO_AMBROSIUM_DROPS).add(EntityType.PLAYER);
-        this.tag(AetherTags.Entities.UNLAUNCHABLE);
+        this.tag(AetherTags.Entities.UNLAUNCHABLE).add(AetherEntityTypes.AECHOR_PLANT.get());
         this.tag(AetherTags.Entities.NO_CANDY_CANE_DROPS).add(EntityType.PLAYER);
         this.tag(AetherTags.Entities.DEFLECTABLE_PROJECTILES).addTag(EntityTypeTags.ARROWS).add(
                 EntityType.EGG,
@@ -60,6 +60,12 @@ public class AetherEntityTagData extends EntityTypeTagsProvider {
         this.tag(AetherTags.Entities.IGNORE_INVISIBILITY).addTag(Tags.EntityTypes.BOSSES).add(
                 EntityType.GUARDIAN,
                 EntityType.ELDER_GUARDIAN);
+        this.tag(AetherTags.Entities.UNHOOKABLE).add(
+                AetherEntityTypes.AECHOR_PLANT.get(),
+                AetherEntityTypes.WHIRLWIND.get(),
+                AetherEntityTypes.EVIL_WHIRLWIND.get(),
+                AetherEntityTypes.SLIDER.get(),
+                AetherEntityTypes.SUN_SPIRIT.get());
 
         // Forge
         this.tag(Tags.EntityTypes.BOSSES).add(
@@ -81,5 +87,28 @@ public class AetherEntityTagData extends EntityTypeTagsProvider {
                 AetherEntityTypes.BLUE_SWET.get(),
                 AetherEntityTypes.GOLDEN_SWET.get(),
                 AetherEntityTypes.SENTRY.get());
+        this.tag(EntityTypeTags.FALL_DAMAGE_IMMUNE).add(
+                AetherEntityTypes.PHYG.get(),
+                AetherEntityTypes.FLYING_COW.get(),
+                AetherEntityTypes.MOA.get(),
+                AetherEntityTypes.AERWHALE.get(),
+                AetherEntityTypes.AERBUNNY.get(),
+                AetherEntityTypes.WHIRLWIND.get(),
+                AetherEntityTypes.EVIL_WHIRLWIND.get(),
+                AetherEntityTypes.COCKATRICE.get(),
+                AetherEntityTypes.ZEPHYR.get(),
+                AetherEntityTypes.SLIDER.get(),
+                AetherEntityTypes.VALKYRIE.get(),
+                AetherEntityTypes.VALKYRIE_QUEEN.get(),
+                AetherEntityTypes.SUN_SPIRIT.get()
+        );
+        this.tag(EntityTypeTags.DISMOUNTS_UNDERWATER).add(
+                AetherEntityTypes.PHYG.get(),
+                AetherEntityTypes.FLYING_COW.get(),
+                AetherEntityTypes.MOA.get(),
+                AetherEntityTypes.AERBUNNY.get(),
+                AetherEntityTypes.BLUE_SWET.get(),
+                AetherEntityTypes.GOLDEN_SWET.get()
+        );
     }
 }

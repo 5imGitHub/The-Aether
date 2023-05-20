@@ -21,13 +21,13 @@ If you're interested in sponsoring the Aether project or The Aether Team, please
 
 ## :package: Download the latest releases
 [![Modloader: Forge](https://img.shields.io/badge/mod%20loader-forge-CC974D?style=flat-square)](https://files.minecraftforge.net/net/minecraftforge/forge/)
-[![Modrinth Downloads](https://img.shields.io/modrinth/dt/YhmgMVyu?color=00AF5C&logo=modrinth)]()
-[![Modrinth Version](https://img.shields.io/modrinth/game-versions/YhmgMVyu?color=00AF5C&label=latest&logo=modrinth&last=true)]()
-[![CurseForge Downloads](http://cf.way2muchnoise.eu/255308.svg)]()
-[![CurseForge Version](http://cf.way2muchnoise.eu/versions/255308_latest.svg)]()
+[![Modrinth Downloads](https://img.shields.io/modrinth/dt/YhmgMVyu?color=00AF5C&logo=modrinth)](https://modrinth.com/mod/aether)
+[![Modrinth Version](https://img.shields.io/modrinth/game-versions/YhmgMVyu?color=00AF5C&label=latest&logo=modrinth&last=true)](https://modrinth.com/mod/aether)
+[![CurseForge Downloads](http://cf.way2muchnoise.eu/255308.svg)](https://www.curseforge.com/minecraft/mc-mods/aether)
+[![CurseForge Version](http://cf.way2muchnoise.eu/versions/255308_latest.svg)](https://www.curseforge.com/minecraft/mc-mods/aether)
 [![CircleCI](https://circleci.com/gh/The-Aether-Team/The-Aether/tree/1.19.4-develop.svg?style=shield)](https://app.circleci.com/pipelines/github/The-Aether-Team/The-Aether?branch=1.19.4-develop)
 ### Release builds
-The Aether has no stable release builds for the latest version of Minecraft just yet, but this port is in active development so keep an eye out for its eventual release.
+The Aether has relatively stable beta builds available for release for 1.19.4 on [Modrinth](https://modrinth.com/mod/aether) and [CurseForge](https://www.curseforge.com/minecraft/mc-mods/aether). A full 1.0.0 release will be coming soon.
 
 ### Bleeding edge builds
 If you’re feeling a bit more adventurous or wish to help test the in-development versions, we provide **bleeding edge builds** which are produced on [CircleCI](https://app.circleci.com/pipelines/github/The-Aether-Team/The-Aether). These builds are created for every new commit and contain the latest available code. We do not recommend users treat these builds as releases, as they are unfinished and may contain serious issues. If you wish to download these builds, check out [this guide](https://github.com/The-Aether-Team/The-Aether/wiki/CircleCI-Guide).
@@ -108,7 +108,7 @@ If you have a reason that you wish to use our brand or any unlicensed material, 
 
 ## :star2: Special mentions
 ### :speech_balloon: Translations
-[![OneSky translations](https://custom-icon-badges.demolab.com/badge/onesky-aether-2fa9e7?style=flat-square&logo=onesky)](http://aether.oneskyapp.com/collaboration)
+[![Crowdin translations](https://img.shields.io/badge/crowdin-aether--mod-blue?color=55BC5C&label=crowdin&logo=crowdin&style=flat-square)](https://crowdin.com/project/aether-mod)
 
 The Aether is available in these languages thanks to the following contributors:
 
@@ -118,7 +118,7 @@ The Aether is available in these languages thanks to the following contributors:
 | Chinese Traditional* | (zh_tw) | y830705                                                     |
 | Dutch*               | (nl_nl) | Critical                                                    |
 | French*              | (fr_fr) | lololoustau, Beethov46, Aethyus                             |
-| German*              | (de_de) | ?                                                           |
+| German*              | (de_de) | HazeWorksOnFiveMServer, Catchears                           |
 | Indonesian*          | (id_id) | F640                                                        |
 | Italian*             | (it_it) | ?                                                           |
 | Japanese*            | (ja_jp) | baguchan                                                    |
@@ -133,7 +133,7 @@ The Aether is available in these languages thanks to the following contributors:
 
 _\* Indicates only partial language support._
 
-If you are interested in contributing translations to The Aether, check out our [OneSky](http://aether.oneskyapp.com/collaboration) and our [Discord](https://discord.gg/aethermod)! If you have contributed translations in the past and your name is missing from the above list, please contact us.
+If you are interested in contributing translations to The Aether, check out our [Crowdin](https://crowdin.com/project/aether-mod) and our [Discord](https://discord.gg/aethermod)! If you have contributed translations in the past and your name is missing from the above list, please contact us.
 
 ### :hammer: Contributions
 All of our code contribution credits can be found [here](https://github.com/The-Aether-Team/The-Aether/blob/1.19.4-develop/docs/CREDITS.txt). If you contributed to the project and do not see your name, please contact us.

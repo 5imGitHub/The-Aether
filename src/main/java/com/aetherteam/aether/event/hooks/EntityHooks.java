@@ -1,6 +1,9 @@
 package com.aetherteam.aether.event.hooks;
 
+import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.AetherTags;
+import com.aetherteam.aether.block.AetherBlocks;
+import com.aetherteam.aether.capability.item.DroppedItem;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.entity.ai.goal.BeeGrowBerryBushGoal;
 import com.aetherteam.aether.entity.ai.goal.FoxEatBerryBushGoal;
@@ -28,6 +31,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
+import java.util.Collection;
 import java.util.Optional;
 
 public class EntityHooks {
@@ -43,9 +47,20 @@ public class EntityHooks {
 
     public static boolean dismountPrevention(Entity rider, Entity mount, boolean dismounting) {
         if (dismounting && rider.isShiftKeyDown()) {
-            return (mount instanceof MountableAnimal && !mount.isOnGround()) || (mount instanceof Swet swet && !swet.isFriendly());
+            return (mount instanceof MountableAnimal && !mount.isOnGround() && !mount.isInFluidType() && !mount.isPassenger()) || (mount instanceof Swet swet && !swet.isFriendly());
         }
         return false;
+    }
+
+    public static void launchMount(Player player) {
+        Entity mount = player.getVehicle();
+        if (player.isPassenger() && mount != null) {
+            if (mount.getLevel().getBlockStates(mount.getBoundingBox()).anyMatch((state) -> state.is(AetherBlocks.BLUE_AERCLOUD.get()))) {
+                if (player.getLevel().isClientSide()) {
+                    mount.setDeltaMovement(mount.getDeltaMovement().x(), 2.0, mount.getDeltaMovement().z());
+                }
+            }
+        }
     }
 
     public static void skyrootBucketMilking(Entity target, Player player, InteractionHand hand) {
@@ -90,9 +105,9 @@ public class EntityHooks {
         return interactionResult;
     }
 
-    public static boolean preventSliderHooked(Entity projectileEntity, HitResult rayTraceResult) {
+    public static boolean preventEntityHooked(Entity projectileEntity, HitResult rayTraceResult) {
         if (rayTraceResult instanceof EntityHitResult entityHitResult) {
-            return entityHitResult.getEntity() instanceof Slider && projectileEntity instanceof FishingHook;
+            return entityHitResult.getEntity().getType().is(AetherTags.Entities.UNHOOKABLE) && projectileEntity instanceof FishingHook;
         }
         return false;
     }
@@ -106,6 +121,12 @@ public class EntityHooks {
             return itemEntity.getItem().is(AetherTags.Items.DUNGEON_KEYS);
         } else {
             return false;
+        }
+    }
+
+    public static void trackDrops(LivingEntity entity, Collection<ItemEntity> itemDrops) {
+        if (entity instanceof Player player) {
+            itemDrops.forEach(itemEntity -> DroppedItem.get(itemEntity).ifPresent(droppedItem -> droppedItem.setOwner(player)));
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.aetherteam.aether.entity.monster.dungeon.boss;
 
 import com.aetherteam.aether.AetherConfig;
+import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.api.BossRoomTracker;
 import com.aetherteam.aether.block.AetherBlocks;
 import com.aetherteam.aether.capability.player.AetherPlayer;
@@ -186,7 +187,7 @@ public class SunSpirit extends PathfinderMob implements BossMob<SunSpirit>, Enem
 
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
-        return this.isRemoved() || !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !source.getMsgId().equals("aether.ice_crystal");
+        return this.isRemoved() || !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !source.is(AetherTags.DamageTypes.IS_COLD);
     }
 
     /**
@@ -285,7 +286,7 @@ public class SunSpirit extends PathfinderMob implements BossMob<SunSpirit>, Enem
             if (this.level.getBlockState(pos).getBlock() instanceof LiquidBlock) {
                 this.level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
                 this.evaporateEffects(pos);
-            } else if (!this.level.getFluidState(pos).isEmpty()) {
+            } else if (!this.level.getFluidState(pos).isEmpty() && this.level.getBlockState(pos).hasProperty(BlockStateProperties.WATERLOGGED)) {
                 this.level.setBlockAndUpdate(pos, this.level.getBlockState(pos).setValue(BlockStateProperties.WATERLOGGED, false));
                 this.evaporateEffects(pos);
             }

@@ -1,9 +1,11 @@
 package com.aetherteam.aether.client.renderer.player.layer;
 
 import com.aetherteam.aether.Aether;
+import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.client.renderer.AetherModelLayers;
 import com.aetherteam.aether.client.renderer.entity.model.ValkyrieWingsModel;
 import com.aetherteam.aether.capability.player.AetherPlayer;
+import com.aetherteam.aether.util.EntityUtil;
 import com.aetherteam.aether.util.EquipmentUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -46,7 +48,7 @@ public class PlayerWingsLayer<T extends Player, M extends PlayerModel<T>> extend
 
     private void handleWingRotation(AetherPlayer aetherPlayer, float partialTicks) {
         if (EquipmentUtil.hasFullValkyrieSet(aetherPlayer.getPlayer())) {
-            if (!aetherPlayer.getPlayer().isOnGround() && (aetherPlayer.getPlayer().getFirstPassenger() != null && !aetherPlayer.getPlayer().getFirstPassenger().isOnGround())) {
+            if (!aetherPlayer.getPlayer().isOnGround() && !aetherPlayer.getPlayer().isInFluidType() && (aetherPlayer.getPlayer().getVehicle() != null && !aetherPlayer.getPlayer().getVehicle().isOnGround())) {
                 aetherPlayer.setWingRotation(Mth.wrapDegrees((Mth.lerp(partialTicks, aetherPlayer.getWingRotation(), aetherPlayer.getWingRotation() + ((0.75F / 4.0F) * (float) (180.0F / Math.PI))))));
             } else {
                 aetherPlayer.setWingRotation(Mth.wrapDegrees((Mth.lerp(partialTicks, aetherPlayer.getWingRotation(), aetherPlayer.getWingRotation() + ((0.15F / 4.0F) * (float) (180.0F / Math.PI))))));
@@ -75,8 +77,8 @@ public class PlayerWingsLayer<T extends Player, M extends PlayerModel<T>> extend
         }
 
         this.wings.rightWing.yRot -= (float) Math.sin(sinage) / 6.0F;
-        this.wings.rightWing.zRot -= (float) Math.cos(sinage) / (entity.isOnGround() ? 8.0F : 3.0F);
+        this.wings.rightWing.zRot -= (float) Math.cos(sinage) / (entity.isOnGround() || entity.isInFluidType() ? 8.0F : 3.0F);
         this.wings.leftWing.yRot += (float) Math.sin(sinage) / 6.0F;
-        this.wings.leftWing.zRot += (float) Math.cos(sinage) / (entity.isOnGround() ? 8.0F : 3.0F);
+        this.wings.leftWing.zRot += (float) Math.cos(sinage) / (entity.isOnGround() || entity.isInFluidType() ? 8.0F : 3.0F);
     }
 }

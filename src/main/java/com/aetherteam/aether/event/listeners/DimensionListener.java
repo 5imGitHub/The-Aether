@@ -21,9 +21,11 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.SleepFinishedTimeEvent;
 import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
@@ -142,13 +144,25 @@ public class DimensionListener {
         ServerLevel level = (ServerLevel) event.getLevel();
         if (level.dimensionType().effectsLocation().equals(AetherDimensions.AETHER_DIMENSION_TYPE.location())) {
             long time = event.getNewTime() + 48000L;
-            event.setTimeAddition(time - time % 72000L);
+            event.setTimeAddition(time - time % (long) AetherDimensions.AETHER_TICKS_PER_DAY);
 
             ServerLevelAccessor serverLevelAccessor = (ServerLevelAccessor) level;
             serverLevelAccessor.aether$getServerLevelData().setRainTime(0);
             serverLevelAccessor.aether$getServerLevelData().setRaining(false);
             serverLevelAccessor.aether$getServerLevelData().setThunderTime(0);
             serverLevelAccessor.aether$getServerLevelData().setThundering(false);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onTriedToSleep(SleepingTimeCheckEvent event) {
+        Player player = event.getEntity();
+        if (player.getLevel().dimensionType().effectsLocation().equals(AetherDimensions.AETHER_DIMENSION_TYPE.location())) {
+            AetherTime.get(player.getLevel()).ifPresent((aetherTime) -> {
+                if (aetherTime.getEternalDay()) {
+                    event.setResult(Event.Result.DENY);
+                }
+            });
         }
     }
 }
